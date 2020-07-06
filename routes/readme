@@ -1,0 +1,44 @@
+Api endpoints:
+signup:->  (POST) /users/signup
+login:->   (POST) /users/login
+logout:->  (GET) /users/logout
+view,post,delte all products:-> (GET,POST,DELETE) /product
+view,post,delte a specific product:-> (GET,PUT,DELETE) /product/:productId
+view,post,delte all categories:-> (GET,POST,DELETE) /category
+view,post,delte all products of a category:-> (GET,POST,PUT,DELETE) /category/:categoryId
+
+Scemas:
+User Schema
+Product Schema
+Category Schema
+
+Authentication:
+JWT(1 hour expiry time)
+
+sample user:
+{
+    "firstname":"aparsh",
+    "lastname":"gupta",
+    "username":"admin22",
+    "password":"password",
+}
+
+sample product:
+{
+    "name" : "Samsung M30",
+    "description": "Its a good phone",
+    "image": "url of image",
+    "label": "new",
+    "price": 10000,
+    "categories": [],
+    "comments":[]
+}
+
+sample body of category:
+{
+    "name":"mobile",
+    "products":[
+        {"id":"5f0335e5079e6a7770d694c0"},
+        {"id":"5f0335e5079e6a6660d694c0"}
+    ]
+}
