@@ -5,7 +5,7 @@ const passport = require('passport');
 var JwtStratergy = require('passport-jwt').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
 var jwt = require('jsonwebtoken');
-
+var bcrypt = require('bcryptjs');
 var config = require('./config');
 const { NotExtended } = require('http-errors');
 const express = require('express');
@@ -43,6 +43,29 @@ exports.jwtPassport = passport.use(new JwtStratergy(opts,
     }));
 
 exports.veryUser = passport.authenticate('jwt',{session:false});
+
+exports.UserLogin = (req, res, next) => {
+    User.findOne({username:req.body.username})
+    .then((user)=>{
+        console.log(user);
+        if(user){
+            bcrypt.compare(req.body.password, user.password, (err,result) => {
+                if(result)
+                {
+                    req.body._id = user._id;
+                    next();
+                }
+                else
+                {
+                    err = new Error('Invalid Password!!!');
+                    err.statusCode = 403;
+                    next(err);
+                }
+              })
+        }
+    },(err)=> next(err))
+    .catch((err)=> next(err)) 
+}
 
 exports.verifyAdmin = (user) =>{
     if(user.admin){

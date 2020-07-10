@@ -3,8 +3,9 @@ const bodyParser = require('body-parser');
 var User = require('../models/user');
 var passport = require('passport');
 var authenticate = require('../authenticate');
+var bcrypt = require('bcryptjs');
 const cors = require('./cors');
-
+var emailController = require('../src/controller/email.controller');
 var router = express.Router();
 router.use(bodyParser.json());
 
@@ -27,7 +28,13 @@ router.get('/', cors.corsWithOptions ,authenticate.veryUser ,function(req, res, 
 });
 
 router.post('/signup',cors.corsWithOptions, (req,res,next) => {
-  User.register(new User({username : req.body.username}),
+
+bcrypt.hash(req.body.password, 10, (err, hash)=>{
+  if(err)
+  {
+    next(err);
+  }
+  User.register(new User({username : req.body.username, password: hash}),
   req.body.password, (err,user) => {
     console.log(user);
     if(err)
@@ -43,6 +50,10 @@ router.post('/signup',cors.corsWithOptions, (req,res,next) => {
       if(req.body.lastname){
         user.lastname = req.body.lastname;
       }
+      if(req.body.email){
+        user.email = req.body.email;
+      }
+
       user.save((err,user)=>{
         if(err){
           console.log('error2');
@@ -51,21 +62,30 @@ router.post('/signup',cors.corsWithOptions, (req,res,next) => {
           res.json({err : err});
           return;
         }
-        passport.authenticate('local')(req,res,()=>{
-          var token = authenticate.getToken({_id:req.user._id});
-          res.statusCode = 200;
-          res.setHeader('Content-Type','application/json');
-          res.json({success:true,token: token, status: 'Resgistration Successful!'});
-        });
+        bcrypt.compare(req.body.password, user.password, (err,result) => {
+          if(result)
+          {
+            var token = authenticate.getToken({_id:user._id});
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json({success:true,token: token, status: 'Resgistration Successful!'});
+          }
+          else
+          {
+            next(err);
+          }
+        })
       });
     }
   });
+})
+  
 });
 
 
 router.post('/login',cors.corsWithOptions,
-passport.authenticate('local'), (req,res,next)=>{
-  var token = authenticate.getToken({_id:req.user._id});
+authenticate.UserLogin , (req,res,next)=>{
+  var token = authenticate.getToken({_id:req.body._id});
   res.statusCode = 200;
   res.setHeader('Content-Type','application/json');
   res.json({success:true,token: token,status: 'Login Successful!'});  
@@ -85,4 +105,15 @@ router.get('/logout', cors.corsWithOptions, (req,res,next) => {
     return next(err);
   }
 });
+
+router.post('/reset_password',cors.corsWithOptions,emailController.sendPasswordResetEmail);
+
+router.post('/receive_new_password/:userId/:token',cors.corsWithOptions, 
+emailController.receiveNewPassword, (req,res)=>{
+  var token = authenticate.getToken({_id:req.params.userId});
+  res.statusCode = 200;
+  res.setHeader('Content-Type','application/json');
+  res.json({success:true,token: token,status: 'Password Updated!'});
+});
+
 module.exports = router;
