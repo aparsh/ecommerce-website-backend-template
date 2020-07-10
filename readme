@@ -6,6 +6,11 @@ view,post,delte all products:-> (GET,POST,DELETE) /product
 view,post,delte a specific product:-> (GET,PUT,DELETE) /product/:productId
 view,post,delte all categories:-> (GET,POST,DELETE) /category
 view,post,delte all products of a category:-> (GET,POST,PUT,DELETE) /category/:categoryId
+forgot password => you will get a mail at your registered mailId => /user/reset_password  (request body must contains emailid of user)
+After this you will get a mail in in your inbox with a link = /users/receive_new_password/:userID/:token 
+make a post request on the above link(/users/receive_new_password/:userID/:token) and request body must contain new password
+
+
 
 Scemas:
 User Schema
@@ -20,6 +25,7 @@ sample user:
     "firstname":"aparsh",
     "lastname":"gupta",
     "username":"admin22",
+    "email":"sample@gmail.com",
     "password":"password",
 }
 
