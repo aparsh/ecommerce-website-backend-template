@@ -116,4 +116,4 @@ emailController.receiveNewPassword, (req,res)=>{
   res.json({success:true,token: token,status: 'Password Updated!'});
 });
 
-module.exports = router;
+export default router;
